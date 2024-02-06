@@ -70,12 +70,25 @@ final class Btree {
    *
    */
   private boolean nodeLookup(int value, int pointer) {
+    /*
+     use binary search to find the value, if found return true
+
+
+     */
+    int i = 0;
+
+    if(i < nodes[pointer].size && value == nodes[pointer].values[i])
+        return true;
     //
-    //
-    // TODO
-    //
-    //
-    return XXX;
+    while(i < nodes[pointer].size && value > nodes[pointer].values[i])
+      i++;
+    // if not found, check if the node is a leaf node
+    // if the node is a leaf node, return false
+    if(isLeaf(nodes[pointer]))
+        return false;
+    // if the node is not a leaf node, recursively call nodeLookup on the child node
+    return nodeLookup(value, nodes[pointer].children[i]);
+
   }
 
   /*
