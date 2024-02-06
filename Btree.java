@@ -43,7 +43,17 @@ final class Btree {
   public boolean Lookup(int value) {
     return nodeLookup(value, root);
   }
+  /* during the insertion, when the algorithm searches for the key point to insert the value,
+it will return -2 if the value already exists
 
+if the node is full, split the node and insert the value into the parent node
+so when we insert the node, the parent node won't be full and split again
+if the node is root, create a new root and split the old root
+*/
+  public void split(int pointer) {
+
+
+  }
   /*
    * Insert(int value)
    *    - If -1 is returned, the value is inserted and increase cntValues.
@@ -51,6 +61,16 @@ final class Btree {
    */
   public void Insert(int value) {
     if(nodeInsert(value, root) == -1) cntValues++;
+    // check if the root is full
+    if(nodes[root].size == NODESIZE) {
+      // if the root is full, create a new root and split the old root
+      int newRoot = initNode();
+      nodes[newRoot].children[0] = root;
+      split(newRoot);
+      root = newRoot;
+    }
+    //if not full, insert the value
+    nodeInsert(value, root);
   }
 
 
@@ -67,28 +87,32 @@ final class Btree {
   /*
    * nodeLookup(int value, int pointer)
    *    - True if the value was found in the specified node.
-   *
+   *@param value the value to be looked up
+   * @param pointer the index of the current node being looked up in the nodes array
    */
   private boolean nodeLookup(int value, int pointer) {
     /*
      use binary search to find the value, if found return true
-
-
      */
-    int i = 0;
-
-    if(i < nodes[pointer].size && value == nodes[pointer].values[i])
+    int left = 0;
+    int right = nodes[pointer].size - 1;
+    int mid;
+    while(left <= right) {
+      mid = left +(right-left) / 2;
+      if(nodes[pointer].values[mid]==value)
         return true;
-    //
-    while(i < nodes[pointer].size && value > nodes[pointer].values[i])
-      i++;
-    // if not found, check if the node is a leaf node
-    // if the node is a leaf node, return false
-    if(isLeaf(nodes[pointer]))
-        return false;
-    // if the node is not a leaf node, recursively call nodeLookup on the child node
-    return nodeLookup(value, nodes[pointer].children[i]);
+      else if(nodes[pointer].values[mid] > value)
+        right = mid - 1;
+      else
+        left = mid + 1;
+    }
 
+    // if not found, check if the node is a leaf node
+    if(isLeaf(nodes[pointer]))
+      // if the node is a leaf node, return false
+      return false;
+    // if the node is not a leaf node, use recursion to find the value
+    return nodeLookup(value, nodes[pointer].children[left]);
   }
 
   /*
@@ -96,14 +120,15 @@ final class Btree {
    *    - -2 if the value already exists in the specified node
    *    - -1 if the value is inserted into the node or
    *            something else if the parent node has to be restructured
+   * insert the node into the correct position
+   * @param value the value to be inserted
+   * @param pointer the pointer to the node?
    */
   private int nodeInsert(int value, int pointer) {
-    //
-    //
-    // TODO
-    //
-    //
-    return XXX;
+
+
+
+
   }
 
 
