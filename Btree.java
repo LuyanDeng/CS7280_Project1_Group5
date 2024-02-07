@@ -44,13 +44,30 @@ final class Btree {
     return nodeLookup(value, root);
   }
   /* during the insertion, when the algorithm searches for the key point to insert the value,
-it will return -2 if the value already exists
 
 if the node is full, split the node and insert the value into the parent node
 so when we insert the node, the parent node won't be full and split again
 if the node is root, create a new root and split the old root
+split the node's children into two nodes
+@param node the parent node of the node to be split
+@param pointer the index of the node to be split in the nodes array
 */
-  public void split(int pointer) {
+  public void split(Node node, int pointer) {
+    //get children of the node
+    int[] children = node.children;
+
+    // get full size of child node
+    int children_size = children.length;
+    //get the left mid of the children
+    int mid = children_size / 2;
+    // build a new list store the right half of the children
+    int[] right_children = new int[children_size - mid];
+    //copy the right half of the children to the right list
+    System.arraycopy(children, mid, right_children, 0, children_size - mid);
+
+
+
+
 
 
   }
@@ -66,7 +83,7 @@ if the node is root, create a new root and split the old root
       // if the root is full, create a new root and split the old root
       int newRoot = initNode();
       nodes[newRoot].children[0] = root;
-      split(newRoot);
+      split(nodes[root], newRoot);
       root = newRoot;
     }
     //if not full, insert the value
@@ -94,25 +111,43 @@ if the node is root, create a new root and split the old root
     /*
      use binary search to find the value, if found return true
      */
+    //  if the node is a leaf node
+    if(isLeaf(nodes[pointer])){
+      int left = 0;
+      int right = nodes[pointer].size - 1;
+      int mid;
+        while(left <= right) {
+            mid = left + (right - left) / 2;
+            if (nodes[pointer].values[mid] == value)
+            return true;
+            else if (nodes[pointer].values[mid] > value)
+            right = mid - 1;
+            else
+            left = mid + 1;
+        }
+        return false;
+    }
+    // if the node is not a leaf node, use recursion to find the value
     int left = 0;
     int right = nodes[pointer].size - 1;
     int mid;
+    //Default to the rightmost child if value is greater than all values in the node
+
+    int childrenIndex = nodes[pointer].size;
     while(left <= right) {
-      mid = left +(right-left) / 2;
-      if(nodes[pointer].values[mid]==value)
+      mid = left + (right - left) / 2;
+      if (nodes[pointer].values[mid] == value)
         return true;
-      else if(nodes[pointer].values[mid] > value)
+      else if (nodes[pointer].values[mid] > value) {
         right = mid - 1;
-      else
+        //update the children index to the left child
+        childrenIndex = mid;
+      } else {
         left = mid + 1;
+      }
     }
 
-    // if not found, check if the node is a leaf node
-    if(isLeaf(nodes[pointer]))
-      // if the node is a leaf node, return false
-      return false;
-    // if the node is not a leaf node, use recursion to find the value
-    return nodeLookup(value, nodes[pointer].children[left]);
+    return nodeLookup(value, nodes[pointer].children[childrenIndex]);
   }
 
   /*
@@ -122,9 +157,46 @@ if the node is root, create a new root and split the old root
    *            something else if the parent node has to be restructured
    * insert the node into the correct position
    * @param value the value to be inserted
-   * @param pointer the pointer to the node?
+   * @param pointer the index of the node in the nodes array
    */
+
+  /*
+   fine if the value in the given array, if found return True
+   @param arr the array to be searched
+   @param value the value to be searched
+   */
+  private boolean binarySearch(int[] arr, int value,int size) {
+    int left = 0;
+    int right = size-1;
+    int mid;
+    while(left <= right) {
+      mid = left + (right - left) / 2;
+      if(arr[mid] == value)
+        return true;
+      else if(arr[mid] > value)
+        right = mid - 1;
+      else
+        left = mid + 1;
+    }
+    return false;
+  }
   private int nodeInsert(int value, int pointer) {
+    //build a node
+    Node node = nodes[pointer];
+    // check if the value already exists in the node
+    if(nodeLookup(value, pointer))
+      return -2;
+    // if the node is a leaf node return -1
+    if(isLeaf(node)) {
+      int index = binarySearch(node.values, value);
+      //insert the value into the node
+      for(int i = node.size; i > index; i--) {
+        node.values[i] = node.values[i - 1];
+      }
+      node.values[index] = value;
+      node.size++;
+      return -1;
+    }
 
 
 
@@ -140,7 +212,7 @@ if the node is root, create a new root and split the old root
    *         (Leaf node -> a missing children)
    */
   boolean isLeaf(Node node) {
-    return node.children == null; // TODO: check the children size is greater than 0
+    return node.children == null || node.children.length == 0; //  check the children size is greater than 0
   }
 
   /*
@@ -202,5 +274,33 @@ final class Node {
    */
   int size;
 
-  // TODO: need a constructor
+    /* Constructor */
+    Node() {
+      size = 0;
+    }
+    //get the value of the node
+    public int getValue(int index) {
+      return values[index];
+    }
+
+    //get the child node of the node
+    public int getChild(int index) {
+        return children[index];
+    }
+   //get size of the node
+    public int getSize() {
+      return size;
+    }
+    //set the value of the node
+    public void setValue(int index, int value) {
+      values[index] = value;
+    }
+    //set the child node of the node
+    public void setChild(int index, int child) {
+      children[index] = child;
+    }
+    //set the size of the node
+    public void setSize(int size) {
+      this.size = size;
+    }
 }
